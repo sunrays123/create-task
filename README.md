@@ -1,13 +1,18 @@
+
 var NUM_ROWS = 10;
 var NUM_COLS = 10;
 var COLOROFBOARD = new Color(82, 91, 104);
-var bombs = 0;
-var noPoints = 4;
+var bombs = 4;
+var noPoints = 0;
 function start(){
     makeBoard();
     grid();
+    mouseClickMethod(breakApart());
 }
-
+function breakApart(e){
+    click(e);
+    points(click);
+}
 
 function makeBoard(){
     genRectangle(getWidth(), getHeight(), 0, 0, COLOROFBOARD);
@@ -41,9 +46,47 @@ function genLine(x1, y1, x2, y2){
 
 function grid(){
     var newGrid  = new Grid(NUM_ROWS,NUM_COLS);
-    newGrid.set(NUM_COLS,NUM_ROWS,Randomizer.nextInt(1, 3));
+    newGrid.set(NUM_COLS,NUM_ROWS,Randomizer.nextInt(0, 4));
     println(newGrid);
     add(newGrid);
 }
 
+function clicke(e){
+    var xCord = e.getX();
+    var yCord = e.getY();
+    var location = (xCord + ", " + yCord);
+    return(location);
+}
+
+function getRowForClick(Y){
+    var decimalCol = Y / SQUARE_HEIGHT;
+    var row = Math.floor(decimalCol);
+    return row;
+}
+
+function getColForClick(X){
+    var decimalCol = X / SQUARE_WIDTH;
+    var column = Math.floor(decimalCol);
+    return column;
+}
+
+function valueXCord(COL){
+    if(COL == 0){
+        return SQUARE_WIDTH /2;
+    }else{
+        return (SQUARE_WIDTH * COL) + (SQUARE_WIDTH / 2); 
+    }
+}
+
+function valueYCord(ROW){
+    if(ROW == 0){
+        return SQUARE_HEIGHT /2;
+    } else {
+        return (SQUARE_HEIGHT * ROW) + (SQUARE_HEIGHT /2);
+    }
+}
+function points(){
+    var elem = newGrid.get(clicke);
+    
+}
 
