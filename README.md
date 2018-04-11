@@ -2,8 +2,7 @@ var NUM_ROWS = 10;
 var NUM_COLS = 10;
 var COLOROFBOARD = new Color(82, 91, 104);
 var newGrid  = new Grid(NUM_ROWS,NUM_COLS);
-var BOMBCOUNTER = 0;
-
+var BOMBPERCENT = 0.4;
 
 
 //Functions I made are below here.
@@ -16,14 +15,12 @@ function start(){
 
 function makeBoard(){
     genRectangle(getWidth(), getHeight(), 0, 0, COLOROFBOARD);
-    
     var xSpacing = getWidth()/NUM_ROWS;
     var OriginalXSpacing = xSpacing;
     for(var x = 1; x < NUM_ROWS + 1; x++){
         genLine(xSpacing, 0, xSpacing, getHeight());
         xSpacing = OriginalXSpacing * x;
     }
-    
     var ySpacing = getHeight()/NUM_COLS;
     var OriginalYSpacing = ySpacing;
     for(var y = 0; y < NUM_COLS + 1; y++){
@@ -41,7 +38,7 @@ function genLine(x1, y1, x2, y2){
 }
 
 //Functions my partner made are below here.
-var bombs = 4;
+var bombs = 1;
 var noPoints = 0;
 
 function genRectangle(width,height,x,y,color){ 
@@ -51,25 +48,22 @@ function genRectangle(width,height,x,y,color){
     add(rect); 
 }
 
-function limitAmountOfBombs(x, y){
-    if(newGrid.get(x,y) == bombs){
-        BOMBCOUNTER++;
-        if(BOMBCOUNTER == 15){
-            bombs = 3;        
-        }
-    }
-}
-
 function grid(){
     for(var x = 0; x < NUM_ROWS; x++){
         for(var y = 0; y < NUM_COLS; y++){
-            var number = Randomizer.nextInt(noPoints, bombs);
-            newGrid.set(x, y, number);
-            limitAmountOfBombs(x, y);
+            var isBomb = Randomizer.nextBoolean(BOMBPERCENT);
+            setCellGrid(isBomb, x, y);
         }
     }
-    bombs = 4;
     println(newGrid);
+}
+
+function setCellGrid(condition, x, y){
+    if(condition == true){
+        newGrid.set(x, y, bombs);
+        }else{
+        newGrid.set(x, y, noPoints);
+    }
 }
 
 function determineLocation(e){
@@ -108,8 +102,4 @@ function valueYCord(ROW){
     } else {
         return (SQUARE_HEIGHT * ROW) + (SQUARE_HEIGHT /2);
     }
-}
-function points(){
-    var elem = newGrid.get(clicke);
-    
 }
