@@ -1,4 +1,3 @@
-
 var NUM_ROWS = 10;
 var NUM_COLS = 10;
 var COLOROFBOARD = new Color(82, 91, 104);
@@ -7,14 +6,26 @@ var BOMBCOUNTER = 0;
 var BOMBPERCENT = 0.2;
 var SQUARE_WIDTH = getWidth()/NUM_COLS;
 var SQUARE_HEIGHT = getHeight()/NUM_COLS;
-
+var stateVariable = 0;
+var defusedBomb = 2;
 
 //Functions I made are below here.
 
 function start(){
     makeBoard();
     grid();
-    mouseClickMethod(determineLocation);
+    keyDownMethod(switchModes);
+    mouseClickMethod(determineTypeOfClick);
+    
+}
+
+function switchModes(e){
+    if(e.keyCode == Keyboard.letter("q")){
+        stateVariable = 1;
+    }
+    if(e.keyCode == Keyboard.letter("e")){
+        stateVariable = 0;
+    }
 }
 
 function makeBoard(){
@@ -99,7 +110,35 @@ function checkNeighbors(row, col){
     return BOMBCOUNTER;
 }
 
-function determineLocation(e){
+function determineTypeOfClick(e){
+    if(stateVariable == 0){
+        defuseBomb(e);
+    }
+    if(stateVariable == 1){
+        revealSquare(e);
+    }
+}
+
+function defuseBomb(e){
+    var col = getColForClick(e.getX());
+    var row = getRowForClick(e.getY());
+    var number = newGrid.get(row, col);
+    genRectangle(SQUARE_WIDTH,SQUARE_HEIGHT,SQUARE_WIDTH*col,SQUARE_HEIGHT*row,COLOROFBOARD);
+    makeCircle(SQUARE_WIDTH/2, SQUARE_WIDTH * col + (SQUARE_WIDTH/2), SQUARE_HEIGHT * row + (SQUARE_HEIGHT/2), Color.red);
+    if(number == bombs){
+        newGrid.set(row,col,defusedBomb);
+        println(newGrid);
+    }
+}
+
+function makeCircle(radius, X, Y, color){
+    var circle = new Circle(radius);
+    circle.setPosition(X, Y);
+    circle.setColor(color);
+    add(circle);
+}
+
+function revealSquare(e){
     var xCoord = e.getX();
     var yCoord = e.getY();
     var col = getColForClick(xCoord);
@@ -109,23 +148,24 @@ function determineLocation(e){
         println("Lose");
     }else{
         var neighbors = checkNeighbors(row, col);
-        fillInCell(number, row, col);
+        fillInCell(neighbors, row, col);
         BOMBCOUNTER = 0;
     }
 }
 
 function fillInCell(num, row, col){
-    var rectXCoord = translateRowToX(col);
-    var rectYCoord = translateColToY(row);
+    var rectXCoord = SQUARE_WIDTH * col;
+    var rectYCoord = SQUARE_HEIGHT * row;
     genRectangle(SQUARE_WIDTH, SQUARE_HEIGHT, rectXCoord, rectYCoord, Color.white);
     setText(num, rectXCoord, rectYCoord);
 }
 
 function setText(num, X, Y){
     var txt = new Text(num, "10pt Arial");
-    txt.setPosition(X + ((SQUARE_WIDTH / 2) - 3), Y + ((SQUARE_HEIGHT / 2) - 5));
+    txt.setPosition(X + ((SQUARE_WIDTH / 2) - 3), Y + ((SQUARE_HEIGHT / 2) + 3));
     txt.setColor(Color.blue);
     add(txt);
+    println(num);
 }
 
 
@@ -137,12 +177,4 @@ function getColForClick(X){
 function getRowForClick(Y){
     var row = Math.floor(Y/(getHeight()/NUM_COLS));
     return row;
-}
-
-function translateRowToX(col){
-    return SQUARE_WIDTH * col;
-}
-
-function translateColToY(row){
-    return SQUARE_HEIGHT * row;
 }
