@@ -1,11 +1,12 @@
+
 var NUM_ROWS = 10;
 var NUM_COLS = 10;
 var COLOROFBOARD = new Color(82, 91, 104);
 var newGrid  = new Grid(NUM_ROWS,NUM_COLS);
-var BOMBPERCENT = 0.4;
+var BOMBCOUNTER = 0;
+var BOMBPERCENT = 0.2;
 var SQUARE_WIDTH = getWidth()/NUM_COLS;
 var SQUARE_HEIGHT = getHeight()/NUM_COLS;
-var BOMBCOUNTER = 0;
 
 
 //Functions I made are below here.
@@ -18,14 +19,12 @@ function start(){
 
 function makeBoard(){
     genRectangle(getWidth(), getHeight(), 0, 0, COLOROFBOARD);
-    
     var xSpacing = getWidth()/NUM_ROWS;
     var OriginalXSpacing = xSpacing;
     for(var x = 1; x < NUM_ROWS + 1; x++){
         genLine(xSpacing, 0, xSpacing, getHeight());
         xSpacing = OriginalXSpacing * x;
     }
-    
     var ySpacing = getHeight()/NUM_COLS;
     var OriginalYSpacing = ySpacing;
     for(var y = 0; y < NUM_COLS + 1; y++){
@@ -42,6 +41,25 @@ function genLine(x1, y1, x2, y2){
     add(line);
 }
 
+function grid(){
+    for(var x = 0; x < NUM_ROWS; x++){
+        for(var y = 0; y < NUM_COLS; y++){
+            var number = Randomizer.nextBoolean(BOMBPERCENT);
+            newGrid.set(x, y, number);
+            setCellGrid(number, x, y);
+        }
+    }
+    println(newGrid);
+}
+
+function setCellGrid(number, x, y){
+    if(number == true){
+        newGrid.set(x, y, bombs);
+    }else{
+        newGrid.set(x, y, noPoints);
+    }
+}
+
 //Functions my partner made are below here.
 var bombs = 1;
 var noPoints = 0;
@@ -51,40 +69,6 @@ function genRectangle(width,height,x,y,color){
     rect.setPosition(x,y); 
     rect.setColor(color); 
     add(rect); 
-}
-
-function grid(){
-    for(var x = 0; x < NUM_ROWS; x++){
-        for(var y = 0; y < NUM_COLS; y++){
-            var isBomb = Randomizer.nextBoolean(BOMBPERCENT);
-            setCellGrid(isBomb, x, y);
-        }
-    }
-    println(newGrid);
-}
-
-function setCellGrid(condition, x, y){
-    if(condition == true){
-        newGrid.set(x, y, bombs);
-        }else{
-        newGrid.set(x, y, noPoints);
-    }
-}
-
-function determineLocation(e){
-    var xCoord = e.getX();
-    var yCoord = e.getY();
-    var col = getColForClick(xCoord);
-    var row = getRowForClick(yCoord);
-    //convertBoardCoordinates(row, col);
-    var number = newGrid.get(row, col);
-    if(number == bombs){
-        println("Lose");
-    }else{
-        var neighbors = checkNeighbors(row, col);
-        println(neighbors);
-        BOMBCOUNTER = 0;
-    }
 }
 
 function checkNeighbors(row, col){
@@ -115,39 +99,50 @@ function checkNeighbors(row, col){
     return BOMBCOUNTER;
 }
 
-function convertBoardCoordinates(row, col){
-    var XCoord = valueXCord(col);
-    var YCoord = valueYCord(row);
-    println(XCoord + "," + YCoord);
+function determineLocation(e){
+    var xCoord = e.getX();
+    var yCoord = e.getY();
+    var col = getColForClick(xCoord);
+    var row = getRowForClick(yCoord);
+    var number = newGrid.get(row, col);
+    if(number == bombs){
+        println("Lose");
+    }else{
+        var neighbors = checkNeighbors(row, col);
+        fillInCell(number, row, col);
+        BOMBCOUNTER = 0;
+    }
 }
 
+function fillInCell(num, row, col){
+    var rectXCoord = translateRowToX(col);
+    var rectYCoord = translateColToY(row);
+    genRectangle(SQUARE_WIDTH, SQUARE_HEIGHT, rectXCoord, rectYCoord, Color.white);
+    setText(num, rectXCoord, rectYCoord);
+}
+
+function setText(num, X, Y){
+    var txt = new Text(num, "10pt Arial");
+    txt.setPosition(X + ((SQUARE_WIDTH / 2) - 3), Y + ((SQUARE_HEIGHT / 2) - 5));
+    txt.setColor(Color.blue);
+    add(txt);
+}
+
+
 function getColForClick(X){
-    var WIDTHOFBOX = getWidth()/NUM_ROWS;
-    var decimalCol = X / WIDTHOFBOX;
-    var column = Math.floor(decimalCol);
+    var column = Math.floor(X/(getWidth()/NUM_ROWS));
     return column;
 }
 
 function getRowForClick(Y){
-    var HEIGHTOFBOX = getHeight()/NUM_COLS;
-    var decimalCol = Y / HEIGHTOFBOX;
-    var row = Math.floor(decimalCol);
+    var row = Math.floor(Y/(getHeight()/NUM_COLS));
     return row;
 }
 
-function valueXCord(COL){
-    if(COL == 0){
-        return SQUARE_WIDTH /2;
-    }else{
-        return (SQUARE_WIDTH * COL) + (SQUARE_WIDTH / 2); 
-    }
+function translateRowToX(col){
+    return SQUARE_WIDTH * col;
 }
 
-function valueYCord(ROW){
-    if(ROW == 0){
-        return SQUARE_HEIGHT /2;
-    } else {
-        return (SQUARE_HEIGHT * ROW) + (SQUARE_HEIGHT /2);
-    }
+function translateColToY(row){
+    return SQUARE_HEIGHT * row;
 }
-
