@@ -3,6 +3,9 @@ var NUM_COLS = 10;
 var COLOROFBOARD = new Color(82, 91, 104);
 var newGrid  = new Grid(NUM_ROWS,NUM_COLS);
 var BOMBPERCENT = 0.4;
+var SQUARE_WIDTH = getWidth()/NUM_COLS;
+var SQUARE_HEIGHT = getHeight()/NUM_COLS;
+var BOMBCOUNTER = 0;
 
 
 //Functions I made are below here.
@@ -15,12 +18,14 @@ function start(){
 
 function makeBoard(){
     genRectangle(getWidth(), getHeight(), 0, 0, COLOROFBOARD);
+    
     var xSpacing = getWidth()/NUM_ROWS;
     var OriginalXSpacing = xSpacing;
     for(var x = 1; x < NUM_ROWS + 1; x++){
         genLine(xSpacing, 0, xSpacing, getHeight());
         xSpacing = OriginalXSpacing * x;
     }
+    
     var ySpacing = getHeight()/NUM_COLS;
     var OriginalYSpacing = ySpacing;
     for(var y = 0; y < NUM_COLS + 1; y++){
@@ -69,9 +74,51 @@ function setCellGrid(condition, x, y){
 function determineLocation(e){
     var xCoord = e.getX();
     var yCoord = e.getY();
-    var row = getColForClick(xCoord);
-    var col = getRowForClick(yCoord);
-    println(row + "," + col);
+    var col = getColForClick(xCoord);
+    var row = getRowForClick(yCoord);
+    //convertBoardCoordinates(row, col);
+    var number = newGrid.get(row, col);
+    if(number == bombs){
+        println("Lose");
+    }else{
+        var neighbors = checkNeighbors(row, col);
+        println(neighbors);
+        BOMBCOUNTER = 0;
+    }
+}
+
+function checkNeighbors(row, col){
+    if(newGrid.inBounds(row - 1, col) == true && newGrid.get(row - 1, col) == bombs){
+        BOMBCOUNTER++;
+    }
+    if(newGrid.inBounds(row - 1, col + 1) == true && newGrid.get(row - 1, col + 1) == bombs){
+        BOMBCOUNTER++;
+    }
+    if(newGrid.inBounds(row - 1, col - 1) == true && newGrid.get(row - 1, col - 1) == bombs){
+        BOMBCOUNTER++;
+    }
+    if(newGrid.inBounds(row, col - 1) == true && newGrid.get(row, col - 1) == bombs){
+        BOMBCOUNTER++;
+    }
+    if(newGrid.inBounds(row, col + 1) == true && newGrid.get(row, col + 1) == bombs){
+        BOMBCOUNTER++;
+    }
+    if(newGrid.inBounds(row + 1, col) == true && newGrid.get(row + 1, col) == bombs){
+        BOMBCOUNTER++;
+    }
+    if(newGrid.inBounds(row + 1, col - 1) == true && newGrid.get(row + 1, col - 1) == bombs){
+        BOMBCOUNTER++;
+    }
+    if(newGrid.inBounds(row + 1, col + 1) == true && newGrid.get(row + 1, col + 1) == bombs){
+        BOMBCOUNTER++;
+    }
+    return BOMBCOUNTER;
+}
+
+function convertBoardCoordinates(row, col){
+    var XCoord = valueXCord(col);
+    var YCoord = valueYCord(row);
+    println(XCoord + "," + YCoord);
 }
 
 function getColForClick(X){
@@ -103,3 +150,4 @@ function valueYCord(ROW){
         return (SQUARE_HEIGHT * ROW) + (SQUARE_HEIGHT /2);
     }
 }
+
