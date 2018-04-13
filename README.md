@@ -3,11 +3,16 @@ var NUM_COLS = 10;
 var COLOROFBOARD = new Color(82, 91, 104);
 var newGrid  = new Grid(NUM_ROWS,NUM_COLS);
 var BOMBCOUNTER = 0;
-var BOMBPERCENT = 0.2;
+var BOMBPERCENT = 0.4;
+
 var SQUARE_WIDTH = getWidth()/NUM_COLS;
 var SQUARE_HEIGHT = getHeight()/NUM_COLS;
 var stateVariable = 0;
+
+var bombs = 1;
+var noPoints = 0;
 var defusedBomb = 2;
+var falseDefused = 3;
 
 //Functions I made are below here.
 
@@ -16,7 +21,6 @@ function start(){
     grid();
     keyDownMethod(switchModes);
     mouseClickMethod(determineTypeOfClick);
-    
 }
 
 function switchModes(e){
@@ -30,6 +34,10 @@ function switchModes(e){
 
 function makeBoard(){
     genRectangle(getWidth(), getHeight(), 0, 0, COLOROFBOARD);
+    generateGridPicture();
+}
+
+function generateGridPicture(){
     var xSpacing = getWidth()/NUM_ROWS;
     var OriginalXSpacing = xSpacing;
     for(var x = 1; x < NUM_ROWS + 1; x++){
@@ -43,7 +51,6 @@ function makeBoard(){
         ySpacing = OriginalYSpacing * y;
     }
 }
-
 
 function genLine(x1, y1, x2, y2){
     var line = new Line(x1, y1, x2, y2);
@@ -72,8 +79,6 @@ function setCellGrid(number, x, y){
 }
 
 //Functions my partner made are below here.
-var bombs = 1;
-var noPoints = 0;
 
 function genRectangle(width,height,x,y,color){ 
     var rect = new Rectangle(width,height); 
@@ -113,9 +118,11 @@ function checkNeighbors(row, col){
 function determineTypeOfClick(e){
     if(stateVariable == 0){
         defuseBomb(e);
+        generateGridPicture();
     }
     if(stateVariable == 1){
         revealSquare(e);
+        generateGridPicture();
     }
 }
 
@@ -123,12 +130,33 @@ function defuseBomb(e){
     var col = getColForClick(e.getX());
     var row = getRowForClick(e.getY());
     var number = newGrid.get(row, col);
+    if(number == 3 || number == 2){
+        removeDefused(col, row, number);
+    }else{
+        addDefusedBomb(col,row,number);
+    }
+}
+
+function removeDefused(col, row, number){
+    genRectangle(SQUARE_WIDTH, SQUARE_HEIGHT, SQUARE_WIDTH * col, SQUARE_HEIGHT * row, COLOROFBOARD);
+    if(number == defusedBomb){
+        newGrid.set(row, col, bombs);
+    }
+    if(number == falseDefused){
+        newGrid.set(row, col, noPoints);
+    }
+    println(newGrid);
+}
+
+function addDefusedBomb(col,row,number){
     genRectangle(SQUARE_WIDTH,SQUARE_HEIGHT,SQUARE_WIDTH*col,SQUARE_HEIGHT*row,COLOROFBOARD);
     makeCircle(SQUARE_WIDTH/2, SQUARE_WIDTH * col + (SQUARE_WIDTH/2), SQUARE_HEIGHT * row + (SQUARE_HEIGHT/2), Color.red);
     if(number == bombs){
         newGrid.set(row,col,defusedBomb);
-        println(newGrid);
+    }else{
+        newGrid.set(row,col,falseDefused);
     }
+    println(newGrid);
 }
 
 function makeCircle(radius, X, Y, color){
@@ -146,10 +174,12 @@ function revealSquare(e){
     var number = newGrid.get(row, col);
     if(number == bombs){
         println("Lose");
-    }else{
+    }else if(number != defusedBomb && number != falseDefused){
         var neighbors = checkNeighbors(row, col);
         fillInCell(neighbors, row, col);
         BOMBCOUNTER = 0;
+    }else{
+        
     }
 }
 
