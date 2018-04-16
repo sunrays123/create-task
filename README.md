@@ -5,6 +5,8 @@ var newGrid  = new Grid(NUM_ROWS,NUM_COLS);
 var BOMBCOUNTER = 0;
 var BOMBPERCENT = 0.4;
 
+//K
+
 var SQUARE_WIDTH = getWidth()/NUM_COLS;
 var SQUARE_HEIGHT = getHeight()/NUM_COLS;
 var stateVariable = 0;
