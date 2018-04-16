@@ -7,7 +7,7 @@ var BOMBPERCENT = 0.2;
 var SQUARE_WIDTH = getWidth()/NUM_COLS;
 var SQUARE_HEIGHT = getHeight()/NUM_COLS;
 
-
+//start
 //Functions I made are below here.
 
 function start(){
