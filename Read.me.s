@@ -8,7 +8,7 @@ var SQUARE_WIDTH = getWidth()/NUM_COLS;
 var SQUARE_HEIGHT = getHeight()/NUM_COLS;
 
 //startFucntions
-//Functions I made are below here.
+//Functions I made are below here....
 
 function start(){
     makeBoard();
