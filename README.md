@@ -1,21 +1,22 @@
-var NUM_ROWS = 3;
-var NUM_COLS = 3;
+var NUM_ROWS = 10;
+var NUM_COLS = 10;
 var COLOROFBOARD = new Color(82, 91, 104);
 var newGrid  = new Grid(NUM_ROWS,NUM_COLS);
 var BOMBCOUNTER = 0;
-var BOMBPERCENT = 0.2;
+var BOMBPERCENT = 0.3;
 var bombTxt;
 
 var SQUARE_WIDTH = getWidth()/NUM_COLS;
 var SQUARE_HEIGHT = getHeight()/NUM_COLS;
 var stateVariable = 0;
 var gameHasStarted = false;
-var COUNTER = 0;
+var gameIsOver = false;
 
-var bombs = 1;
 var noPoints = 0;
+var bombs = 1;
 var openSquare = 2;
-var falseDefused = 3;
+var marker = 3;
+var markedBomb = 4;
 
 //Functions I made are below here.
 
@@ -34,6 +35,7 @@ function startGame(e){
         keyDownMethod(switchModes);
         mouseClickMethod(determineTypeOfClick);
     }
+    println(newGrid);
 }
 
 function makeLoadingScreen(){
@@ -107,7 +109,6 @@ function grid(){
             setCellGrid(number, x, y);
         }
     }
-    println(newGrid);
 }
 
 function setCellGrid(number, x, y){
@@ -156,77 +157,100 @@ function checkNeighbors(row, col){
 }
 
 function determineTypeOfClick(e){
-    if(stateVariable == 0){
-        markBomb(e);
-        generateGridPicture();
+    if(gameIsOver == false){    
+        if(stateVariable == 0){
+            markBomb(e);
+            generateGridPicture();
+        }
+        if(stateVariable == 1){
+            revealSquare(e);
+            generateGridPicture();
+        }   
+        checkForWin();
     }
-    if(stateVariable == 1){
-        revealSquare(e);
-        generateGridPicture();
-    }
-    checkForWin();
 }
 
 function checkForWin(){
-    var win = false;
+    var winCounter = 0;
+    var totalNotBombs = findAllNotBombs();
     for(var x = 0; x < NUM_ROWS; x++){
         for(var y = 0; y < NUM_COLS; y++){
             var current = newGrid.get(x, y);
-            if(current == openSquare && current != bombs){
-                win = true;
-                
-            }else{
-                win = false;
+            if(current == openSquare){
+                winCounter++;
             }
         }
     }
-    if(win==true){
-        printScreen(win);
+    if(totalNotBombs == winCounter){
+        printScreen("Won");
+    }else{
+        winCounter = 0;
     }
 }
 
-function printScreen(win){
-    setText("You have won the game!", 50, getHeight()/2,"20pt Arial");
+function findAllNotBombs(){
+    var squares = 0;
+    for(var x = 0; x < NUM_ROWS; x++){
+        for(var y = 0; y < NUM_COLS; y++){
+            var current = newGrid.get(x, y);
+            if(current == openSquare || current == noPoints || current == marker){
+                squares++;
+            }
+        }
+    }
+    return squares;
+}
+
+
+function printScreen(condition){
+    genRectangle(getWidth(), getHeight(), 0, 0, Color.white);
+    setText("You have " + condition + " the game!", 0, getHeight()/2-50,"20pt Arial");
+    gameIsOver = true;
 }
 
 function markBomb(e){
     var col = getColForClick(e.getX());
     var row = getRowForClick(e.getY());
     var number = newGrid.get(row, col);
-    var totalBombs = numberOfBombs();
-    if(COUNTER <= totalBombs){
-        if(number == 3 || number == 2){
-            removeMarker(col, row, number);
+    var condition = false;
+    if(number == 3 || number == 4){
+        if(number == 3){
+            condition = false;
+            removeMarker(col, row, number, condition);
         }else{
+            condition = true;
+            removeMarker(col, row, number, condition);
+        }
+    }else{
+        if(number == 0){
             addMarker(col,row,number);
+        }else if(number == 1){
+            addMarkerOnBomb(col,row,number);
+        }else{
+            println("You can't mark an opened square.")
         }
     }
-    println(totalBombs);
-    println(COUNTER);
 }
 
-function removeDefused(col, row, number){
+function addMarkerOnBomb(col, row, number){
     genRectangle(SQUARE_WIDTH, SQUARE_HEIGHT, SQUARE_WIDTH * col, SQUARE_HEIGHT * row, COLOROFBOARD);
-    println(newGrid);
+    makeCircle(SQUARE_WIDTH/2, SQUARE_WIDTH * col + (SQUARE_WIDTH/2), SQUARE_HEIGHT * row + (SQUARE_HEIGHT/2), Color.red);
+    newGrid.set(row, col, markedBomb);
 }
 
-function numberOfBombs(){
-    var temp = 0;
-    for(var x = 0; x <= NUM_ROWS - 1; x++){
-        for(var y = 0; y <= NUM_COLS - 1; y++){
-            var current = newGrid.get(x, y);
-            if(current == bombs){
-                temp++;
-            }
-        }
+function removeMarker(col, row, number, condition){
+    genRectangle(SQUARE_WIDTH, SQUARE_HEIGHT, SQUARE_WIDTH * col, SQUARE_HEIGHT * row, COLOROFBOARD);
+    if(condition == false){
+        newGrid.set(row,col,0);
+    }else{
+        newGrid.set(row, col, 1);
     }
-    return temp;
 }
 
 function addMarker(col,row,number){
     genRectangle(SQUARE_WIDTH,SQUARE_HEIGHT,SQUARE_WIDTH*col,SQUARE_HEIGHT*row,COLOROFBOARD);
     makeCircle(SQUARE_WIDTH/2, SQUARE_WIDTH * col + (SQUARE_WIDTH/2), SQUARE_HEIGHT * row + (SQUARE_HEIGHT/2), Color.red);
-    println(newGrid);
+    newGrid.set(row,col,marker);
 }
 
 function makeCircle(radius, X, Y, color){
@@ -242,15 +266,16 @@ function revealSquare(e){
     var col = getColForClick(xCoord);
     var row = getRowForClick(yCoord);
     var number = newGrid.get(row, col);
-    if(number == bombs){
-        println("Lose");
-    }else if(number == 0){
+    if(number == bombs || number == markedBomb){
+        printScreen("Lost");
+    }else if(number == 0 || number == 3 || number){
         var neighbors = checkNeighbors(row, col);
         fillInCell(neighbors, row, col);
         newGrid.set(row,col,openSquare);
         BOMBCOUNTER = 0;
+
     }else{
-        
+        println("This square has already been opened");    
     }
 }
 
