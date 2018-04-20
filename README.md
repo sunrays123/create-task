@@ -26,7 +26,7 @@ function start(){
     }
     
 }
-
+//sdsdsdsdsdsd
 function startGame(e){
     if(e.keyCode == Keyboard.letter('S')){
         gameHasStarted == true;
