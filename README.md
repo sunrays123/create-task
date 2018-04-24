@@ -3,7 +3,7 @@ var NUM_COLS = 10;
 var COLOROFBOARD = new Color(82, 91, 104);
 var newGrid  = new Grid(NUM_ROWS,NUM_COLS);
 var BOMBCOUNTER = 0;
-var BOMBPERCENT = 0.3;
+var BOMBPERCENT = 0.1;
 var bombTxt;
 
 var SQUARE_WIDTH = getWidth()/NUM_COLS;
@@ -129,31 +129,16 @@ function genRectangle(width,height,x,y,color){
 }
 
 function checkNeighbors(row, col){
-    if(newGrid.inBounds(row - 1, col) == true && newGrid.get(row - 1, col) == bombs){
-        BOMBCOUNTER++;
+    for(var x = -1; x <=1 ; x++){
+            for(var y = -1; y <= 1; y++){
+                var neighborRow = row - x;
+                var neighborCols = col - y;
+                if(newGrid.inBounds(neighborRow,neighborCols) == true && newGrid.get(neighborRow,neighborCols) == bombs){
+                    BOMBCOUNTER++;
+                }
+            }
     }
-    if(newGrid.inBounds(row - 1, col + 1) == true && newGrid.get(row - 1, col + 1) == bombs){
-        BOMBCOUNTER++;
-    }
-    if(newGrid.inBounds(row - 1, col - 1) == true && newGrid.get(row - 1, col - 1) == bombs){
-        BOMBCOUNTER++;
-    }
-    if(newGrid.inBounds(row, col - 1) == true && newGrid.get(row, col - 1) == bombs){
-        BOMBCOUNTER++;
-    }
-    if(newGrid.inBounds(row, col + 1) == true && newGrid.get(row, col + 1) == bombs){
-        BOMBCOUNTER++;
-    }
-    if(newGrid.inBounds(row + 1, col) == true && newGrid.get(row + 1, col) == bombs){
-        BOMBCOUNTER++;
-    }
-    if(newGrid.inBounds(row + 1, col - 1) == true && newGrid.get(row + 1, col - 1) == bombs){
-        BOMBCOUNTER++;
-    }
-    if(newGrid.inBounds(row + 1, col + 1) == true && newGrid.get(row + 1, col + 1) == bombs){
-        BOMBCOUNTER++;
-    }
-    return BOMBCOUNTER;
+    return  BOMBCOUNTER;
 }
 
 function determineTypeOfClick(e){
@@ -268,14 +253,65 @@ function revealSquare(e){
     var number = newGrid.get(row, col);
     if(number == bombs || number == markedBomb){
         printScreen("Lost");
-    }else if(number == 0 || number == 3 || number){
+    }else if(number==0||number == 3 || number){
         var neighbors = checkNeighbors(row, col);
-        fillInCell(neighbors, row, col);
+        if(neighbors==0){
+            adajacentSquare(neighbors,row,col);
+            fillInCell(neighbors,row,col);
+            newGrid.set(row,col,openSquare);
+            BOMBCOUNTER=0;
+        }else{
+            fillInCell(neighbors, row, col);
         newGrid.set(row,col,openSquare);
         BOMBCOUNTER = 0;
-
+        }
     }else{
-        println("This square has already been opened");    
+        println("This square has already been opened");  
+    }
+}
+
+function rowInBounds(row){
+    if(row < 0){
+        return false;
+    }
+    if(row >=  NUM_ROWS){
+        return false;
+    }
+    return true;
+}
+
+function colInBounds(col){
+    if(col < 0){
+        return false;
+    }
+    if(col >= NUM_COLS){
+        return false;
+    }
+    return true;
+    
+}
+
+
+function adajacentSquare(num,row,col){
+    if(num == 0){
+        for(var x = -1; x <=1 ; x++){
+            for(var y = -1; y <= 1; y++){
+                var neighborRow = row - x;
+                var neighborCols = col - y;
+                var nums = checkNeighbors(neighborRow,neighborCols);
+                    if(rowInBounds(neighborRow) && colInBounds(neighborCols)){
+                        if(neighborRow != row || neighborCols != col){
+                            if(nums >= 1 && nums <= 8){
+                                fillInCell(nums,neighborRow,neighborCols);
+                                println(nums);
+                        }else{
+                            adajacentSquare(nums,neighborRow,neighborCols);
+                            
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
